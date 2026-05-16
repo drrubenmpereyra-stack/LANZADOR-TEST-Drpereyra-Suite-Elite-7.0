@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA ÉLITE 7.0 | INITIALIZING MATRICES</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neo-celeste: #00FFFF;
+            --bg-negro: #000000;
+            --panel-gris: #050505;
+            --border-color: #222;
+            --glow: 0 0 15px #00FFFF, inset 0 0 5px #00FFFF;
+            --font-data: 'Courier Prime', monospace;
+            --font-ui: 'Orbitron', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-negro);
+            color: white;
+            font-family: var(--font-data);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ==========================================================================
+           01. INTRO CINEMÁTICA CON ZOOM DE LOGO CRÍTICO (4 SEGUNDOS)
+           ========================================================================== */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+
+        /* Línea Láser Dinámica de Fondo */
+        .laser-scanner {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neo-celeste), transparent);
+            box-shadow: 0 0 25px var(--neo-celeste), 0 0 10px var(--neo-celeste);
+            opacity: 0.5;
+            animation: hardwareScan 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 2;
+        }
+
+        @keyframes hardwareScan {
+            0% { top: 0%; opacity: 0; }
+            5% { opacity: 0.6; }
+            95% { opacity: 0.6; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Contenedor Interactivo del Log de Carga (Ocultado al iniciar el Zoom) */
+        .boot-monitor {
+            width: 480px;
+            border: 1px solid #111;
+            background: rgba(5, 5, 5, 0.9);
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+            z-index: 5;
+            transition: opacity 0.5s ease;
+        }
+
+        .monitor-header {
+            font-family: var(--font-ui);
+            font-size: 11px;
+            color: var(--neo-celeste);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #111;
+            border: 1px solid #222;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--neo-celeste);
+            box-shadow: 0 0 10px var(--neo-celeste);
+            transition: width 0.05s linear;
+        }
+
+        .terminal-log-output {
+            font-size: 11px;
+            color: #444;
+            height: 40px;
+            line-height: 1.4;
+            overflow: hidden;
+        }
+
+        .text-active-log {
+            color: #fff;
+        }
+
+        /* CAPA DEL LOGO CENTRAL CON CONTROL DE REVELADO Y ZOOM DE 4 SEG */
+        .logo-zoom-viewport {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .climax-logo {
+            font-family: var(--font-ui);
+            font-size: 42px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 20px var(--neo-celeste), 0 0 40px rgba(0, 255, 255, 0.6);
+            letter-spacing: 6px;
+            opacity: 0;
+            transform: scale(0.1); /* Comienza muy pequeño */
+        }
+
+        /* Clase activa inyectada por JS: Ejecuta la transición exacta de 4 segundos */
+        .climax-logo.execute-zoom {
+            opacity: 1;
+            transform: scale(1.4);
+            transition: transform 4.0s linear, opacity 0.6s ease-in-out;
+        }
+
+        /* ==========================================================================
+           02. DASHBOARD OPERATIVO MAESTRO
+           ========================================================================== */
+        #app-container {
+            width: 95vw;
+            height: 92vh;
+            border: 2px solid var(--neo-celeste);
+            background: #000;
+            box-shadow: var(--glow);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #app-container.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        header {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-gris);
+        }
+
+        .titulo-lanzador {
+            font-family: var(--font-ui);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neo-celeste);
+            text-shadow: 0 0 8px var(--neo-celeste);
+            letter-spacing: 2px;
+        }
+
+        .credenciales-sub {
+            font-size: 10px;
+            color: #888;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        #dashboard-grid {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            background: linear-gradient(180deg, #000000 0%, #030a0d 100%);
+        }
+
+        .categoria-test {
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            background: var(--panel-gris);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition: border-color 0.3s ease;
+        }
+        
+        .categoria-test:hover {
+            border-color: #333;
+        }
+
+        .cat-titulo {
+            color: var(--neo-celeste);
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--neo-celeste);
+            padding-bottom: 4px;
+            display: block;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .grid-botones {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-test {
+            background: #000;
+            color: #aaa;
+            border: 1px solid #222;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-test::after {
+            content: '⧉';
+            font-size: 12px;
+            color: #555;
+        }
+
+        .btn-test:hover {
+            border-color: var(--neo-celeste);
+            color: #fff;
+            background: #0a1a1a;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+        }
+
+        footer {
+            padding: 10px 25px;
+            border-top: 1px solid var(--border-color);
+            background: var(--panel-gris);
+            font-size: 9px;
+            color: #555;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="laser-scanner"></div>
+
+        <div id="boot-console" class="boot-monitor">
+            <div class="monitor-header">
+                <span>INITIALIZING CALIBRATION PROCESS</span>
+                <span id="percentage-label">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+            </div>
+            <div class="terminal-log-output">
+                <div id="log-line-prev">CORE:: SECURITY_CHECK_OK</div>
+                <div id="log-line-active" class="text-active-log">> INITIALIZING MATRICES CONVERGENCE...</div>
+            </div>
+        </div>
+
+        <div class="logo-zoom-viewport">
+            <div id="core-logo" class="climax-logo">SISTEMA ÉLITE 7.0</div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <header>
+            <h1 class="titulo-lanzador">SISTEMA ÉLITE 7.0 — BATERÍA CLÍNICA DE LA CONVERGENCIA</h1>
+            <div class="credenciales-sub">
+                AULA VIRTUAL PSICOLOGÍA DE LA CONVERGENCIA<br>
+                DR. Y MGTER. RUBÉN M. PEREYRA
+            </div>
+        </header>
+
+        <main id="dashboard-grid">
+            
+            <section class="categoria-test">
+                <span class="cat-titulo">01. Evaluación Estructural y Visomotora</span>
+                <div class="grid-botones">
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-de-Bender-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        TEST VISOMOTOR DE BENDER (ÉLITE 7.0)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-de-Rorschach-Drpereyra-suite-Elite-7.0/" target="_blank" class="btn-test">
+                        PSICODIAGNÓSTICO RORSCHACH (MATRIZ INTEGRAL V5)
+                    </a>
+                </div>
+            </section>
+
+            <section class="categoria-test">
+                <span class="cat-titulo">02. Dinámica Defensiva y Afrontamiento</span>
+                <div class="grid-botones">
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-Desiderativo-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        CUESTIONARIO DESIDERATIVO (FORTALEZA YOICA)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-de-Hombre-bajo-la-lluvia-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        PERSONA BAJO LA LLUVIA (ESTRESOR AMBIENTAL)
+                    </a>
+                </div>
+            </section>
+
+            <section class="categoria-test">
+                <span class="cat-titulo">03. Grafismo y Estructura Relacional Kinética</span>
+                <div class="grid-botones">
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-HTP-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        H-T-P: CASA - ÁRBOL - PERSONA (EXPERT)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-Figura-Humana-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        FIGURA HUMANA DE MACHOVER (SELF CONSCIENTE)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-Familia-kinetica-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        TEST DE LA FAMILIA KINÉTICA (VÍNCULO PRIMARIO)
+                    </a>
+                </div>
+            </section>
+
+            <section class="categoria-test">
+                <span class="cat-titulo">04. Test de Apercepción Temática y Vínculos</span>
+                <div class="grid-botones">
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-TAT-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        TAT ÉLITE — EVALUACIÓN ADULTOS (MURRAY / BELLAK)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-CAT-Drpeyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        CAT-A EXPERT — APERCEPCIÓN INFANTIL (BELLAK)
+                    </a>
+                    <a href="https://drrubenmpereyra-stack.github.io/Test-Philipson-TRO-Drpereyra-Suite-Elite-7.0/" target="_blank" class="btn-test">
+                        TRO PHILLIPSON (RELACIONES OBJETALES INCONSCIENTES)
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer>
+            SISTEMA DIGITAL DE CONVERGENCIA CLÍNICA Y NEUROCIENCIAS • ENRUTADOR MAESTRO DE PROTOCOLOS V 7.0
+        </footer>
+    </div>
+
+    <script>
+        const bootLogs = [
+            { pct: 20, text: "> DECRIPTANDO MATRICES DE ASOCIACIÓN LIBRE..." },
+            { pct: 50, text: "> LOADING BENDER GESTALT EXECUTIVE NEURO-LAYERS..." },
+            { pct: 80, text: "> STANDARDIZING BELLAK APPERCEPTION CHANNELS..." },
+            { pct: 100, text: "> ALL EXPERT PROTOCOLS STABILIZED." }
+        ];
+
+        let currentPct = 0;
+        let logStep = 0;
+
+        const progressFill = document.getElementById('progress-fill');
+        const percentageLabel = document.getElementById('percentage-label');
+        const logPrev = document.getElementById('log-line-prev');
+        const logActive = document.getElementById('log-line-active');
+        const bootConsole = document.getElementById('boot-console');
+        const coreLogo = document.getElementById('core-logo');
+        const introOverlay = document.getElementById('intro-overlay');
+        const appContainer = document.getElementById('app-container');
+
+        function runLoader() {
+            if (currentPct <= 100) {
+                progressFill.style.width = currentPct + '%';
+                percentageLabel.innerText = currentPct + '%';
+
+                if (logStep < bootLogs.length && currentPct >= bootLogs[logStep].pct) {
+                    logPrev.innerText = logActive.innerText;
+                    logActive.innerText = bootLogs[logStep].text;
+                    logStep++;
+                }
+
+                currentPct += 2; // Carga rápida inicial de barras
+                setTimeout(runLoader, 25);
+            } else {
+                // Al llegar al 100%, ocultamos la consola e iniciamos la cinemática solicitada
+                setTimeout(startCinematicZoom, 400);
+            }
+        }
+
+        function startCinematicZoom() {
+            // Oculta la caja de progreso con suavidad
+            bootConsole.style.opacity = '0';
+            
+            // Dispara el Zoom de 4 segundos exactos en el logo central (desde pequeño a grande)
+            setTimeout(() => {
+                coreLogo.classList.add('execute-zoom');
+                
+                // Al finalizar los 4000ms de Zoom, abrimos el panel general
+                setTimeout(() => {
+                    introOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        introOverlay.style.visibility = 'hidden';
+                        appContainer.classList.add('visible');
+                    }, 800);
+                }, 4000); // Duración exacta del zoom solicitada
+            }, 300);
+        }
+
+        window.onload = runLoader;
+    </script>
+</body>
+</html>
